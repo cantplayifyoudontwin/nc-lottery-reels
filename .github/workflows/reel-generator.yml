@@ -1,0 +1,149 @@
+# NC Lottery Reel Generator
+# This workflow runs daily and generates Instagram Reel content
+# Files will be available at: https://YOUR-USERNAME.github.io/nc-lottery-reels/
+
+name: Generate Daily Reel
+
+on:
+  # Run every day at 12:00 UTC (7:00 AM EST / 8:00 AM EDT)
+  schedule:
+    - cron: '0 12 * * *'
+  
+  # Also allow manual runs from the GitHub Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 Pillow numpy
+          pip install moviepy==1.0.3
+          pip install imageio==2.31.1
+          pip install imageio-ffmpeg
+      
+      - name: Generate reel and images
+        run: python nc_lottery_reel.py
+      
+      - name: Create index page
+        run: |
+          cat > index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>NC Lottery Daily Reel</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #eee; min-height: 100vh; }
+              h1 { color: #ffd700; text-align: center; }
+              h2 { color: #00ffff; margin-top: 30px; }
+              .subtitle { text-align: center; color: #aaa; margin-bottom: 30px; }
+              .file-link { display: block; padding: 15px; margin: 8px 0; background: linear-gradient(135deg, #4A90D9 0%, #8B5CF6 100%); border-radius: 10px; color: white; text-decoration: none; font-weight: bold; text-align: center; }
+              .file-link:hover { transform: scale(1.02); transition: transform 0.2s; }
+              video { max-width: 100%; border-radius: 12px; display: block; margin: 0 auto; }
+              img { max-width: 280px; border-radius: 8px; margin: 5px; cursor: pointer; transition: transform 0.2s; }
+              img:hover { transform: scale(1.05); }
+              .images { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+              .note { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffd700; }
+              .section { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 15px; margin: 20px 0; }
+            </style>
+          </head>
+          <body>
+            <h1>NC Lottery Daily Reel</h1>
+            <p class="subtitle">Updated daily at ~7-8 AM Eastern</p>
+            
+            <div class="note">
+              <strong>How to use:</strong> Right-click (or long-press on mobile) to save files, then upload to Instagram.
+            </div>
+            
+            <div class="section">
+              <h2>Video Reel</h2>
+              <video controls>
+                <source src="daily-reel.mp4" type="video/mp4">
+                Your browser does not support video.
+              </video>
+              <a class="file-link" href="daily-reel.mp4" download>Download Video (daily-reel.mp4)</a>
+            </div>
+            
+            <div class="section">
+              <h2>Standalone Images</h2>
+              <p style="text-align: center; color: #aaa;">Click to preview, right-click to save</p>
+              <div class="images">
+                <a href="slide-1-title.png" target="_blank"><img src="slide-1-title.png" alt="Title"></a>
+                <a href="slide-2-game-3-high.png" target="_blank"><img src="slide-2-game-3-high.png" alt="#3 $10+"></a>
+                <a href="slide-3-game-2-high.png" target="_blank"><img src="slide-3-game-2-high.png" alt="#2 $10+"></a>
+                <a href="slide-4-game-1-high.png" target="_blank"><img src="slide-4-game-1-high.png" alt="#1 $10+"></a>
+                <a href="slide-5-divider.png" target="_blank"><img src="slide-5-divider.png" alt="Divider"></a>
+                <a href="slide-6-game-3-low.png" target="_blank"><img src="slide-6-game-3-low.png" alt="#3 Under $10"></a>
+                <a href="slide-7-game-2-low.png" target="_blank"><img src="slide-7-game-2-low.png" alt="#2 Under $10"></a>
+                <a href="slide-8-game-1-low.png" target="_blank"><img src="slide-8-game-1-low.png" alt="#1 Under $10"></a>
+                <a href="slide-9-cta.png" target="_blank"><img src="slide-9-cta.png" alt="CTA"></a>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h2>Quick Downloads</h2>
+              <a class="file-link" href="slide-1-title.png" download>1. Title Slide</a>
+              <a class="file-link" href="slide-2-game-3-high.png" download>2. #3 Best $10+</a>
+              <a class="file-link" href="slide-3-game-2-high.png" download>3. #2 Best $10+</a>
+              <a class="file-link" href="slide-4-game-1-high.png" download>4. #1 Best $10+ (Blurred)</a>
+              <a class="file-link" href="slide-5-divider.png" download>5. Budget Picks Divider</a>
+              <a class="file-link" href="slide-6-game-3-low.png" download>6. #3 Best Under $10</a>
+              <a class="file-link" href="slide-7-game-2-low.png" download>7. #2 Best Under $10</a>
+              <a class="file-link" href="slide-8-game-1-low.png" download>8. #1 Best Under $10 (Blurred)</a>
+              <a class="file-link" href="slide-9-cta.png" download>9. Call to Action</a>
+            </div>
+            
+            <div class="note" style="margin-top: 40px; border-left-color: #ff6b6b;">
+              <strong>Disclaimer:</strong> This is not financial advice. Lottery games are forms of gambling and are inherently risky. Play responsibly.
+            </div>
+          </body>
+          </html>
+          EOF
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
